@@ -1,7 +1,8 @@
 # MkAuth-API
 API Oficial do MkAuth Modificada Para Utilização com Mwsm
 
-Instalação
+### Instalação:
+* Acesse seu MkAuth via Putty e insira o Codigo Abaixo no Prompt de Comando
 
 ```sh
 cd ~ && rm -vrf /opt/mk-auth/api && mkdir -p /opt/mk-auth/api && git clone https://github.com/MKCodec/MkAuth-API.git /opt/mk-auth/api
