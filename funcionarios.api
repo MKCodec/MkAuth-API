@@ -1,0 +1,210 @@
+<?php
+
+class funcionarios {
+
+	public function parametros($valor) {
+		parse_str($valor, $saida);
+		$pagina = isset($saida['pagina']) ? intval($saida['pagina']) : 1;
+		$limite = isset($saida['limite']) ? intval($saida['limite']) : 500;
+		$PaginaP = ($pagina == 0 ) ? 1 : $pagina;
+		$padrao = ($PaginaP - 1) * $limite;
+		return array('pagina' => $PaginaP, 'limite' => $limite, 'padrao' => $padrao);
+	}
+
+	public function get_listagem() {
+
+		$comandoSQL = 'SELECT uuid_func, nome, cpf, nascimento, email, telefone, celular, salario
+        FROM sis_func';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('funcionarios' => $resultadosSQL));
+
+	}
+
+	public function get_listar($valor) {
+		$parametros = $this->parametros($valor);
+
+		$countSQL = 'SELECT COUNT(*) AS total FROM sis_func';
+		$rotinaCount = DB::prepare($countSQL);
+		$rotinaCount -> execute();
+		$resultadosCount = $rotinaCount -> fetch();
+		$total = intval($resultadosCount->total);
+		$totalPaginas = ceil($total / $parametros['limite']);
+
+		$comandoSQL = 'SELECT uuid_func, nome, cpf, nascimento, email, telefone, celular, salario
+		FROM sis_func
+		ORDER BY nome LIMIT :padrao, :limite';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('padrao', $parametros['padrao'], PDO::PARAM_INT);
+		$rotinaSQL -> bindParam('limite', $parametros['limite'], PDO::PARAM_INT);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		$ConsultaLimite = ($parametros['pagina'] == $totalPaginas) ? $numeroDeLinhas : $parametros['limite'];
+
+		if ($parametros['padrao'] >= $total) {
+			echo json_encode(array('mensagem' => 'Pagina atual acima do limite de paginas'));
+		} else {
+			echo json_encode(array('total_registros' => $total , 'consulta_atual' => $ConsultaLimite, 'pagina_atual' => $parametros['pagina'], 'total_paginas' => $totalPaginas, 'funcionarios' => $resultadosSQL));
+		}
+
+	}
+
+	public function get_show($valor) {
+
+		$comandoSQL = 'SELECT * FROM sis_func 
+		WHERE uuid_func = :uuid 
+		LIMIT 1';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $valor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode($resultadosSQL);
+
+	}
+
+	public function post_inserir($data) {
+
+		$nome = $data->nome;
+		$cpf = $data->cpf;
+		$rg = $data->rg;
+		$nascimento = $data->nascimento;
+		$email = $data->email;
+		$cargo = $data->cargo;
+		$sexo = $data->sexo;
+		$telefone = $data->telefone;
+		$celular = $data->celular;
+		$endereco = $data->endereco;
+		$numero = $data->numero;
+		$bairro = $data->bairro;
+		$complemento = $data->complemento;
+		$cidade = $data->cidade;
+		$estado = $data->estado;
+		$cep = $data->cep;
+		$cidade_ibge = $data->cidade_ibge;
+		$salario = $data->salario;
+		$data_adm = $data->data_adm;
+		$comissao = $data->comissao;
+		$tipo = $data->tipo;
+		$crc = $data->crc;
+
+
+		$comandoSQL = "INSERT INTO sis_func (uuid_func, nome, cpf, rg, nascimento, email, cargo, sexo, telefone, celular, endereco, numero, bairro, complemento, cidade, estado, cep, cidade_ibge, salario, data_adm, comissao, tipo, crc)
+		VALUES (uuid(), :nome, :cpf, :rg, :nascimento, :email, :cargo, :sexo, :telefone, :celular, :endereco, :numero, :bairro, :complemento, :cidade, :estado, :cep, :cidade_ibge, :salario, :data_adm, :comissao, :tipo, :crc)";
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('nome', $nome);
+		$rotinaSQL -> bindParam('cpf', $cpf);
+		$rotinaSQL -> bindParam('rg', $rg);
+		$rotinaSQL -> bindParam('nascimento', $nascimento);
+		$rotinaSQL -> bindParam('email', $email);
+		$rotinaSQL -> bindParam('cargo', $cargo);
+		$rotinaSQL -> bindParam('sexo', $sexo);
+		$rotinaSQL -> bindParam('telefone', $telefone);
+		$rotinaSQL -> bindParam('celular', $celular);
+		$rotinaSQL -> bindParam('endereco', $endereco);
+		$rotinaSQL -> bindParam('numero', $numero);
+		$rotinaSQL -> bindParam('bairro', $bairro);
+		$rotinaSQL -> bindParam('complemento', $complemento);
+		$rotinaSQL -> bindParam('cidade', $cidade);
+		$rotinaSQL -> bindParam('estado', $estado);
+		$rotinaSQL -> bindParam('cep', $cep);
+		$rotinaSQL -> bindParam('cidade_ibge', $cidade_ibge);
+		$rotinaSQL -> bindParam('salario', $salario);
+		$rotinaSQL -> bindParam('data_adm', $data_adm);
+		$rotinaSQL -> bindParam('comissao', $comissao);
+		$rotinaSQL -> bindParam('tipo', $tipo);
+		$rotinaSQL -> bindParam('crc', $crc);
+		$rotinaSQL -> execute();
+
+		echo json_encode(array('status' => 'sucesso', 'dados' => $data));
+
+	}
+
+	public function put_editar($data) {
+
+		$nome = $data->nome;
+		$cpf = $data->cpf;
+		$rg = $data->rg;
+		$nascimento = $data->nascimento;
+		$email = $data->email;
+		$cargo = $data->cargo;
+		$sexo = $data->sexo;
+		$telefone = $data->telefone;
+		$celular = $data->celular;
+		$endereco = $data->endereco;
+		$numero = $data->numero;
+		$bairro = $data->bairro;
+		$complemento = $data->complemento;
+		$cidade = $data->cidade;
+		$estado = $data->estado;
+		$cep = $data->cep;
+		$cidade_ibge = $data->cidade_ibge;
+		$salario = $data->salario;
+		$data_adm = $data->data_adm;
+		$comissao = $data->comissao;
+		$tipo = $data->tipo;
+		$crc = $data->crc;
+		$uuid = $data->uuid;
+
+		$comandoSQL = "UPDATE sis_func
+		SET nome = :nome, cpf = :cpf, rg = :rg, nascimento = :nascimento, email = :email, cargo = :cargo, sexo = :sexo, telefone = :telefone, celular = :celular, endereco = :endereco, numero = :numero, bairro = :bairro, complemento = :complemento, cidade = :cidade, estado = :estado, cep = :cep, cidade_ibge = :cidade_ibge, salario = :salario, data_adm = :data_adm, comissao = :comissao, tipo = :tipo, crc = :crc
+		WHERE uuid_func = :uuid";
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('nome', $nome);
+		$rotinaSQL -> bindParam('cpf', $cpf);
+		$rotinaSQL -> bindParam('rg', $rg);
+		$rotinaSQL -> bindParam('nascimento', $nascimento);
+		$rotinaSQL -> bindParam('email', $email);
+		$rotinaSQL -> bindParam('cargo', $cargo);
+		$rotinaSQL -> bindParam('sexo', $sexo);
+		$rotinaSQL -> bindParam('telefone', $telefone);
+		$rotinaSQL -> bindParam('celular', $celular);
+		$rotinaSQL -> bindParam('endereco', $endereco);
+		$rotinaSQL -> bindParam('numero', $numero);
+		$rotinaSQL -> bindParam('bairro', $bairro);
+		$rotinaSQL -> bindParam('complemento', $complemento);
+		$rotinaSQL -> bindParam('cidade', $cidade);
+		$rotinaSQL -> bindParam('estado', $estado);
+		$rotinaSQL -> bindParam('cep', $cep);
+		$rotinaSQL -> bindParam('cidade_ibge', $cidade_ibge);
+		$rotinaSQL -> bindParam('salario', $salario);
+		$rotinaSQL -> bindParam('data_adm', $data_adm);
+		$rotinaSQL -> bindParam('comissao', $comissao);
+		$rotinaSQL -> bindParam('tipo', $tipo);
+		$rotinaSQL -> bindParam('crc', $crc);
+		$rotinaSQL -> bindParam('uuid', $uuid);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if ($numeroDeLinhas > 0) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Funcionario editado com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+	}
+
+	public function delete_id($key) {
+
+		$comandoSQL = 'DELETE FROM sis_func 
+		WHERE uuid_func = :uuid';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $key);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if ($numeroDeLinhas > 0) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+
+	}
+
+}

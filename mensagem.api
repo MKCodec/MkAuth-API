@@ -1,0 +1,38 @@
+<?php
+
+class mensagem {
+
+	public function post_enviar_email($data) {
+
+		$login = $data -> login;
+		$assunto = $data -> assunto;
+		$mensagem = $data -> mensagem;
+
+		$Enviar = api_email($login, $assunto, $mensagem);
+
+		if ($Enviar != false) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Email enviado com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Erro ao enviar email'));
+		}
+
+	}
+
+
+	public function post_enviar_sms($data) {
+
+		$login = $data -> login;
+		$mensagem = $data -> mensagem;
+
+		$Enviar = api_sms($login, $mensagem);
+
+		if ($Enviar != false) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'SMS enviado com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Erro ao enviar SMS'));
+		}
+
+	}
+
+
+}

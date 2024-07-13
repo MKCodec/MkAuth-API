@@ -1,0 +1,139 @@
+<?php
+
+class cliente {
+
+	public function parametros($valor) {
+		parse_str($valor, $saida);
+		$pagina = isset($saida['pagina']) ? intval($saida['pagina']) : 1;
+		$limite = isset($saida['limite']) ? intval($saida['limite']) : 500;
+		$PaginaP = ($pagina == 0 ) ? 1 : $pagina;
+		$padrao = ($PaginaP - 1) * $limite;
+		return array('pagina' => $PaginaP, 'limite' => $limite, 'padrao' => $padrao);
+	}
+
+	public function get_listagem() {
+
+		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
+		FROM sis_cliente';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('clientes' => $resultadosSQL));
+
+	}
+
+	public function get_listar($valor) {
+		$parametros = $this->parametros($valor);
+
+		$countSQL = 'SELECT COUNT(*) AS total FROM sis_cliente';
+		$rotinaCount = DB::prepare($countSQL);
+		$rotinaCount -> execute();
+		$resultadosCount = $rotinaCount -> fetch();
+		$total = intval($resultadosCount->total);
+		$totalPaginas = ceil($total / $parametros['limite']);
+
+		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
+		FROM sis_cliente
+		ORDER BY id DESC LIMIT :padrao, :limite';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('padrao', $parametros['padrao'], PDO::PARAM_INT);
+		$rotinaSQL -> bindParam('limite', $parametros['limite'], PDO::PARAM_INT);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		$ConsultaLimite = ($parametros['pagina'] == $totalPaginas) ? $numeroDeLinhas : $parametros['limite'];
+
+		if ($parametros['padrao'] >= $total) {
+			echo json_encode(array('mensagem' => 'Pagina atual acima do limite de paginas'));
+		} else {
+			echo json_encode(array('total_registros' => $total , 'consulta_atual' => $ConsultaLimite, 'pagina_atual' => $parametros['pagina'], 'total_paginas' => $totalPaginas, 'clientes' => $resultadosSQL));
+		}
+		
+	}
+
+	public function get_show($valor) {
+
+		$comandoSQL = 'SELECT *
+		FROM sis_cliente
+		WHERE login = :login OR uuid_cliente = :login OR cpf_cnpj = :login
+		LIMIT 1';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('login', $valor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode($resultadosSQL);
+
+	}
+
+	public function post_cadastro($data) {
+
+		$nome = $data -> nome;
+		$login = $data -> login;
+		$senha = $data -> senha;
+		$email = $data -> email;
+		$cpf = $data -> cpf;
+		$rg = $data -> rg;
+		$data_nasc = $data -> data_nasc;
+		$endereco = $data -> endereco;
+		$bairro = $data -> bairro;
+		$complemento = $data -> complemento;
+		$cidade = $data -> cidade;
+		$estado = $data -> estado;
+		$cep = $data -> cep;
+		$telefone = $data -> telefone;
+		$celular = $data -> celular;
+		$numero = $data -> numero;
+		$ip = $_SERVER['REMOTE_ADDR'];
+
+		$comandoSQL = "INSERT INTO sis_solic (uuid_solic, nome, login, senha, email, cpf, rg, data_nasc, endereco, bairro, complemento, cidade, estado, cep, telefone, celular, numero, ipcadastro, endereco_res, numero_res, bairro_res, cidade_res, cep_res, estado_res, complemento_res, processamento)
+		VALUES (uuid(), :nome, :login, :senha, :email, :cpf, :rg, :data_nasc, :endereco, :bairro, :complemento, :cidade, :estado, :cep, :telefone, :celular, :numero, :ip, :endereco, :numero, :bairro, :cidade, :cep, :estado, :complemento, now())";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('nome', $nome);
+		$rotinaSQL -> bindParam('login', $login);
+		$rotinaSQL -> bindParam('senha', $senha);
+		$rotinaSQL -> bindParam('email', $email);
+		$rotinaSQL -> bindParam('cpf', $cpf);
+		$rotinaSQL -> bindParam('rg', $rg);
+		$rotinaSQL -> bindParam('data_nasc', $data_nasc);
+		$rotinaSQL -> bindParam('endereco', $endereco);
+		$rotinaSQL -> bindParam('bairro', $bairro);
+		$rotinaSQL -> bindParam('complemento', $complemento);
+		$rotinaSQL -> bindParam('cidade', $cidade);
+		$rotinaSQL -> bindParam('estado', $estado);
+		$rotinaSQL -> bindParam('cep', $cep);
+		$rotinaSQL -> bindParam('telefone', $telefone);
+		$rotinaSQL -> bindParam('celular', $celular);
+		$rotinaSQL -> bindParam('numero', $numero);
+		$rotinaSQL -> bindParam('ip', $ip);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('status' => 'sucesso', 'dados' => $data));
+
+	}
+
+	public function delete_id($key) {
+
+		$comandoSQL = 'DELETE FROM sis_cliente
+		WHERE uuid_cliente = :uuid';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $key);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if ($numeroDeLinhas > 0) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+		
+	}
+
+}

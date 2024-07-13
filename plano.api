@@ -1,0 +1,167 @@
+<?php
+
+class plano {
+
+	public function parametros($valor) {
+		parse_str($valor, $saida);
+		$pagina = isset($saida['pagina']) ? intval($saida['pagina']) : 1;
+		$limite = isset($saida['limite']) ? intval($saida['limite']) : 500;
+		$PaginaP = ($pagina == 0 ) ? 1 : $pagina;
+		$padrao = ($PaginaP - 1) * $limite;
+		return array('pagina' => $PaginaP, 'limite' => $limite, 'padrao' => $padrao);
+	}
+
+	public function substituirEspacos($texto) {
+
+		$textoFormatado = preg_replace('/[^0-9a-zA-Z]/', NULL, $texto);
+		return $textoFormatado;
+
+	}
+
+	public function get_listagem() {
+
+		$comandoSQL = 'SELECT uuid_plano AS uuid, nome, valor, velup, veldown, prioridade, descricao
+		FROM sis_plano';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('planos' => $resultadosSQL));
+
+	}
+
+	public function get_listar($valor) {
+		$parametros = $this->parametros($valor);
+
+		$countSQL = 'SELECT COUNT(*) AS total FROM sis_plano';
+		$rotinaCount = DB::prepare($countSQL);
+		$rotinaCount -> execute();
+		$resultadosCount = $rotinaCount -> fetch();
+		$total = intval($resultadosCount->total);
+		$totalPaginas = ceil($total / $parametros['limite']);
+
+		$comandoSQL = 'SELECT uuid_plano AS uuid, nome, valor, velup, veldown, prioridade, descricao
+		FROM sis_plano
+		ORDER BY nome LIMIT :padrao, :limite';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('padrao', $parametros['padrao'], PDO::PARAM_INT);
+		$rotinaSQL -> bindParam('limite', $parametros['limite'], PDO::PARAM_INT);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+		
+		$ConsultaLimite = ($parametros['pagina'] == $totalPaginas) ? $numeroDeLinhas : $parametros['limite'];
+
+		if ($parametros['padrao'] >= $total) {
+			echo json_encode(array('mensagem' => 'Pagina atual acima do limite de paginas'));
+		} else {
+			echo json_encode(array('total_registros' => $total, 'consulta_atual' => $ConsultaLimite, 'pagina_atual' => $parametros['pagina'], 'total_paginas' => $totalPaginas, 'planos' => $resultadosSQL));
+		}
+
+	}
+
+	public function get_show($valor) {
+
+		$comandoSQL = 'SELECT *
+		FROM sis_plano
+		WHERE nome = :plano OR uuid_plano = :plano
+		LIMIT 1';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('plano', $valor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode($resultadosSQL);
+
+	}
+
+	public function post_inserir($data) {
+
+		$nome = $data -> nome;
+		$descricao_titulo = $data -> titulo;
+		$descricao = $data -> descricao;
+		$tipo = $data -> tipo;
+		$valor = $data -> valor;
+		$velup = $data -> velup;
+		$veldown = $data -> veldown;
+		
+		$prioridade = isset($data->prioridade) ? $data->prioridade : 8;
+
+		$comandoSQL = "INSERT INTO sis_plano
+		(uuid_plano, nome, tipo, valor, velup, veldown, prioridade, descricao, desc_titulo, tecnologia, aliquota, faixa)
+		VALUES
+		(uuid(), :nome, :tipo, :valor, :velup, :veldown, :prioridade, :descricao, :descricao_titulo, 'H', '0.00', '15')";
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('nome', $this->substituirEspacos($nome));
+		$rotinaSQL -> bindParam('descricao_titulo', $this->substituirEspacos($descricao_titulo));
+		$rotinaSQL -> bindParam('tipo', $tipo);
+		$rotinaSQL -> bindParam('descricao', $descricao);
+		$rotinaSQL -> bindParam('valor', $valor);
+		$rotinaSQL -> bindParam('velup', $velup);
+		$rotinaSQL -> bindParam('veldown', $veldown);
+		$rotinaSQL -> bindParam('prioridade', $prioridade);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro inserido com sucesso', 'dados' => $data));
+
+	}
+
+	public function put_turbo($data){
+
+		$garup = $data -> garup;
+		$gardown = $data -> gardown;
+		$maxup = $data -> maxup;
+		$maxdown = $data -> maxdown;
+		$desaup = $data -> desaup;
+		$desadown = $data -> desadown;
+		$tempoup = $data -> tempoup;
+		$tempodown = $data -> tempodown;
+		$uuid = $data -> uuid;
+
+		$comandoSQL = "UPDATE sis_plano
+		SET garup =:garup, gardown = :gardown, maxup = :maxup, maxdown = :maxdown, desaup = :desaup, desadown = :desadown, tempoup = :tempoup, tempodown = :tempodown, burst = 'sim'
+		WHERE uuid_plano = :uuid";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('garup', $garup);
+		$rotinaSQL -> bindParam('gardown', $gardown);
+		$rotinaSQL -> bindParam('maxup', $maxup);
+		$rotinaSQL -> bindParam('maxdown', $maxdown);
+		$rotinaSQL -> bindParam('desaup', $desaup);
+		$rotinaSQL -> bindParam('desadown', $desadown);
+		$rotinaSQL -> bindParam('tempoup', $tempoup);
+		$rotinaSQL -> bindParam('tempodown', $tempodown);
+		$rotinaSQL -> bindParam('uuid', $uuid);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if($numeroDeLinhas > 0){
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro editado com sucesso', 'dados' => $data));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+		
+	}
+
+	public function delete_id($key) {
+
+		$comandoSQL = 'DELETE FROM sis_plano
+		WHERE uuid_plano = :uuid';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $key);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+		
+		if ($numeroDeLinhas > 0) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+
+	}
+
+}

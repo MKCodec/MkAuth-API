@@ -1,0 +1,90 @@
+<?php
+
+class conta {
+
+	public function parametros($valor) {
+		parse_str($valor, $saida);
+		$pagina = isset($saida['pagina']) ? intval($saida['pagina']) : 1;
+		$limite = isset($saida['limite']) ? intval($saida['limite']) : 500;
+		$PaginaP = ($pagina == 0 ) ? 1 : $pagina;
+		$padrao = ($PaginaP - 1) * $limite;
+		return array('pagina' => $PaginaP, 'limite' => $limite, 'padrao' => $padrao);
+	}
+
+	public function get_listagem() {
+
+		$comandoSQL = 'SELECT id, uuid_boleto AS uuid, banco, agencia, ag_digito, conta, ct_digito
+		FROM sis_boleto';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('contas' => $resultadosSQL));
+
+	}
+
+	public function get_listar($valor) {
+		$parametros = $this->parametros($valor);
+
+		$countSQL = 'SELECT COUNT(*) AS total FROM sis_boleto';
+		$rotinaCount = DB::prepare($countSQL);
+		$rotinaCount -> execute();
+		$resultadosCount = $rotinaCount -> fetch();
+		$total = intval($resultadosCount->total);
+		$totalPaginas = ceil($total / $parametros['limite']);
+
+		$comandoSQL = 'SELECT id, uuid_boleto AS uuid, banco, agencia, ag_digito, conta, ct_digito
+		FROM sis_boleto
+		ORDER BY id LIMIT :padrao, :limite';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('padrao', $parametros['padrao'], PDO::PARAM_INT);
+		$rotinaSQL -> bindParam('limite', $parametros['limite'], PDO::PARAM_INT);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		$ConsultaLimite = ($parametros['pagina'] == $totalPaginas) ? $numeroDeLinhas : $parametros['limite'];
+
+		if ($parametros['padrao'] >= $total) {
+			echo json_encode(array('mensagem' => 'Pagina atual acima do limite de paginas'));
+		} else {
+			echo json_encode(array('total_registros' => $total, 'consulta_atual' => $ConsultaLimite, 'pagina_atual' => $parametros['pagina'], 'total_paginas' => $totalPaginas, 'contas' => $resultadosSQL));
+		}
+	}
+
+	public function get_show($valor) {
+
+		$comandoSQL = 'SELECT *
+		FROM sis_boleto
+		WHERE id = :conta OR uuid_boleto = :conta
+		LIMIT 1';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('conta', $valor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode($resultadosSQL);
+
+	}
+
+	public function delete_id($key) {
+
+		$comandoSQL = 'DELETE FROM sis_boleto
+		WHERE uuid_boleto = :uuid';
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $key);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if ($numeroDeLinhas > 0) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+
+	}
+
+}
