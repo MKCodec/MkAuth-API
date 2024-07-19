@@ -18,7 +18,6 @@ class mensagem {
 
 	}
 
-
 	public function post_enviar_sms($data) {
 
 		$login = $data -> login;
@@ -34,5 +33,38 @@ class mensagem {
 
 	}
 
+	public function post_enviar_zap($data) {
+
+		$login = $data -> login;
+		$tipo = $data -> tipo;
+		$mensagem = $data -> mensagem;
+		$img_base64 = $data -> img_base64;
+		$img_legenda = $data -> img_legenda;
+		$pdf_base64 = $data -> pdf_base64;
+		$pdf_legenda -> pdf_legenda;
+		$pdf_nome = $data -> pdf_nome;
+
+		switch (true) {
+			case $tipo == 1:
+				$Enviar = api_zap_texto($login, $mensagem);
+				break;
+			case $tipo == 2:
+				$Enviar = api_zap_img($login, $img_base64, $img_legenda);
+				break;
+			case $tipo == 3:
+				$Enviar = api_zap_pdf($login, $pdf_base64, $pdf_legenda, $pdf_nome);
+				break;
+			default:
+				$Enviar = false;
+				break;
+		}
+
+		if ($Enviar != false) {
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Zap enviado com sucesso'));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Erro ao enviar Zap'));
+		}
+
+	}
 
 }

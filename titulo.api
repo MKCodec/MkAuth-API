@@ -116,7 +116,7 @@ class titulo {
 
 	public function get_titulos($valor) {
 	
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, vtab_titulos.titulo, nome, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login = :valor OR cpf_cnpj = :valor) AND deltitulo = 0
@@ -149,7 +149,7 @@ class titulo {
 	
 	public function get_aberto($valor) {
 
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login = :valor OR cpf_cnpj = :valor) AND status = 'aberto' AND deltitulo = 0
@@ -182,7 +182,7 @@ class titulo {
 
 	public function get_vencido($valor) {
 		
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login = :valor OR cpf_cnpj = :valor) AND status = 'vencido' AND deltitulo = 0
@@ -215,7 +215,7 @@ class titulo {
 
 	public function get_pago($valor) {
 
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login = :valor OR cpf_cnpj = :valor) AND status = 'pago' AND deltitulo = 0
@@ -256,7 +256,7 @@ class titulo {
 		$login = $this->implodeDados($usuarios_login);
 		$cpf_cnpj = $this->implodeDados($usuarios_cpf);
 
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, vtab_titulos.titulo, status, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login IN ($login) OR cpf_cnpj IN ($cpf_cnpj)) AND deltitulo = 0";

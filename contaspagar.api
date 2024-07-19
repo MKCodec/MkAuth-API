@@ -1,0 +1,253 @@
+<?php
+
+class contaspagar {
+
+	public function parametros($valor) {
+		parse_str($valor, $saida);
+		$pagina = isset($saida['pagina']) ? intval($saida['pagina']) : 1;
+		$limite = isset($saida['limite']) ? intval($saida['limite']) : 500;
+		$PaginaP = ($pagina == 0 ) ? 1 : $pagina;
+		$padrao = ($PaginaP - 1) * $limite;
+		return array('pagina' => $PaginaP, 'limite' => $limite, 'padrao' => $padrao);
+	}
+
+	public function get_listagem() {
+
+		$comandoSQL = "SELECT nrdocumento, status, uuid_contaspagar AS uuid, valor, emissao, vencimento, planodecontas, historico, linhapgdig,
+		CASE 
+			WHEN tipodiv = 'for' THEN sis_fornecedor.nomefan
+			WHEN tipodiv = 'fun' THEN sis_func.nome
+			ELSE 'Sem Dados'
+		END AS fornecedor
+		FROM sis_contaspagar
+		LEFT JOIN sis_fornecedor ON sis_contaspagar.fornecedor = sis_fornecedor.id
+		LEFT JOIN sis_func ON sis_contaspagar.fornecedor = sis_func.id;";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('contas' => $resultadosSQL));
+
+	}
+
+	public function get_listar($valor) {
+
+		$parametros = $this->parametros($valor);
+
+		$countSQL = 'SELECT COUNT(*) AS total FROM sis_contaspagar';
+		$rotinaCount = DB::prepare($countSQL);
+		$rotinaCount -> execute();
+		$resultadosCount = $rotinaCount -> fetch();
+		$total = intval($resultadosCount->total);
+		$totalPaginas = ceil($total / $parametros['limite']);
+
+		$comandoSQL = "SELECT nrdocumento, status, uuid_contaspagar AS uuid, valor, planodecontas, historico, vencimento, emissao, valorpago, datapg, linhapgdig,
+		CASE 
+			WHEN tipodiv = 'for' THEN sis_fornecedor.nomefan
+			WHEN tipodiv = 'fun' THEN sis_func.nome
+			ELSE 'Sem Dados'
+		END AS fornecedor
+		FROM sis_contaspagar
+		LEFT JOIN sis_fornecedor ON sis_contaspagar.fornecedor = sis_fornecedor.id
+		LEFT JOIN sis_func ON sis_contaspagar.fornecedor = sis_func.id
+		ORDER BY sis_contaspagar.id LIMIT :padrao, :limite";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('padrao', $parametros['padrao'], PDO::PARAM_INT);
+		$rotinaSQL -> bindParam('limite', $parametros['limite'], PDO::PARAM_INT);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetchAll();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		$ConsultaLimite = ($parametros['pagina'] == $totalPaginas) ? $numeroDeLinhas : $parametros['limite'];
+
+		if ($parametros['padrao'] >= $total) {
+			echo json_encode(array('mensagem' => 'Pagina atual acima do limite de paginas'));
+		} else {
+			echo json_encode(array('total_registros' => $total, 'consulta_atual' => $ConsultaLimite, 'pagina_atual' => $parametros['pagina'], 'total_paginas' => $totalPaginas, 'contas' => $resultadosSQL));
+		}
+	}
+
+	public function get_show($valor) {
+
+		$comandoSQL = 'SELECT *
+		FROM sis_contaspagar
+		WHERE uuid_contaspagar = :uuid
+		LIMIT 1';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $valor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode($resultadosSQL);
+
+	}
+
+	public function post_inserir($data) {
+
+		$valor = $data->valor;
+		$nrdocumento = $data->nome;
+		$fornecedor = $data->fornecedor_uuid;
+		$emissao = $data->emissao;
+		$vencimento = $data->vencimento;
+		$linhadigitavel = $data->linhadigitavel;
+		$qrcode = $data->qrcode;
+		$historico = $data->historico;
+		$tipoconta = $data->tipoconta;
+		$obs = $data->obs;
+		$zap = $data->zap;
+		$celular = $data->celular;
+		$fornecedorTipo = 'fun';
+		$fornecedorId = NULL;
+
+		$fornecedorSQL = "SELECT id, 'for' AS tipofornecedor 
+		FROM sis_fornecedor WHERE uuid_fornecedor = :fornecedor
+		UNION ALL
+		SELECT id, 'fun' AS tipofornecedor FROM sis_func WHERE uuid_func = :fornecedor";
+
+		$rotinaSQL = DB::prepare($fornecedorSQL);
+		$rotinaSQL -> bindParam('fornecedor', $fornecedor);
+		$rotinaSQL -> execute();
+		$resultadosSQL = $rotinaSQL -> fetch();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if($numeroDeLinhas > 0){
+			$fornecedorId = $resultadosSQL->id;
+			$fornecedorTipo = $resultadosSQL->tipofornecedor;
+		}
+
+		$comandoSQL = "INSERT INTO sis_contaspagar (uuid_contaspagar, usergerou, numparcelas, parcatual, valor, nrdocumento, fornecedor, tipodiv, emissao, vencimento, linhapgdig, qrcode,historico, planodecontas, observacao, zap, celular)
+		VALUES (uuid(), 'API', 1, 0, :valor, :nrdocumento, :fornecedor, :tipodiv, :emissao, :vencimento, :linhapgdig, :qrcode, :historico, :planodecontas, :observacao, :zap, :celular)";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('valor', $valor);
+		$rotinaSQL -> bindParam('nrdocumento', $nrdocumento);
+		$rotinaSQL -> bindParam('fornecedor', $fornecedorId);
+		$rotinaSQL -> bindParam('tipodiv', $fornecedorTipo);
+		$rotinaSQL -> bindParam('emissao', $emissao);
+		$rotinaSQL -> bindParam('vencimento', $vencimento);
+		$rotinaSQL -> bindParam('linhapgdig', $linhadigitavel);
+		$rotinaSQL -> bindParam('qrcode', $qrcode);
+		$rotinaSQL -> bindParam('historico', $historico);
+		$rotinaSQL -> bindParam('planodecontas', $tipoconta);
+		$rotinaSQL -> bindParam('observacao', $obs);
+		$rotinaSQL -> bindParam('zap', $zap);
+		$rotinaSQL -> bindParam('celular', $celular);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		echo json_encode(array('status' => 'sucesso', 'mensagem' => 'A conta foi inserida com sucesso', 'dados' => $data));
+	}
+
+	public function put_editar($data) {
+
+		$uuid = $data->uuid;
+		$valor = $data->valor;
+		$status = $data->status;
+		$valorpago = $data->valorpago;
+		$vencimento = $data->vencimento;
+		$nrdocumento = $data->nome;
+		$historico = $data->historico;
+		$observacao = $data->obs;
+		$planodecontas = $data->tipoconta;
+		$linhapgdig = $data->linhadigitavel;
+		$qrcode = $data->qrcode;
+		$zap = $data->zap;
+		$celular = $data->celular;
+
+		$comandoSQL = "UPDATE sis_contaspagar 
+		SET valor = :valor, status = :status, valorpago = :valorpago, vencimento = :vencimento, nrdocumento = :nrdocumento, historico = :historico, observacao = :observacao, planodecontas = :planodecontas, linhapgdig = :linhapgdig, qrcode = :qrcode, zap = :zap, celular = :celular
+		WHERE uuid_contaspagar = :uuid";
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $uuid);
+		$rotinaSQL -> bindParam('valor', $valor);
+		$rotinaSQL -> bindParam('status', $status);
+		$rotinaSQL -> bindParam('valorpago', $valorpago);
+		$rotinaSQL -> bindParam('vencimento', $vencimento);
+		$rotinaSQL -> bindParam('nrdocumento', $nrdocumento);
+		$rotinaSQL -> bindParam('historico', $historico);
+		$rotinaSQL -> bindParam('observacao', $observacao);
+		$rotinaSQL -> bindParam('planodecontas', $planodecontas);
+		$rotinaSQL -> bindParam('linhapgdig', $linhapgdig);
+		$rotinaSQL -> bindParam('qrcode', $qrcode);
+		$rotinaSQL -> bindParam('zap', $zap);
+		$rotinaSQL -> bindParam('celular', $celular);
+		$rotinaSQL -> execute();
+
+		echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Conta editada com sucesso', 'dados' => $data));
+	}
+
+	public function put_liquidar($data) {
+		
+		$uuid = $data->uuid;
+		$valor_pago = isset($data->valorpago) && $data->valorpago !== '' ? $data->valorpago : '0.00';
+
+		$comandoSQL = "UPDATE sis_contaspagar
+		SET status = 'liquidado', datapg = NOW(), valorpago = CASE
+			WHEN :valorpago = '0.00' THEN valor
+			ELSE :valorpago
+		END
+		WHERE uuid_contaspagar = :uuid AND status <> 'liquidado'";
+		
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $uuid);
+		$rotinaSQL -> bindParam('valorpago', $valor_pago);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if($numeroDeLinhas > 0){
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Conta liquidado com sucesso', 'dados' => $data));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Conta não encontrada'));
+		}
+
+	}
+
+	public function put_estornar($data) {
+		
+		$uuid = $data->uuid;
+
+		$comandoSQL = "UPDATE sis_contaspagar
+		SET valorpago = NULL, status = CASE 
+			WHEN vencimento < NOW() THEN 'vencido'
+			WHEN vencimento > NOW() THEN 'aberto'
+		END
+		WHERE uuid_contaspagar = :uuid AND status = 'liquidado'";
+		
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $uuid);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+
+		if($numeroDeLinhas > 0){
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Conta estornada com sucesso', 'dados' => $data));
+		} else {
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Conta não encontrada'));
+		}
+	
+	}
+
+	public function delete_id($key) {
+
+		$comandoSQL = 'DELETE FROM sis_contaspagar
+		WHERE uuid_contaspagar = :uuid';
+
+		$rotinaSQL = DB::prepare($comandoSQL);
+		$rotinaSQL -> bindParam('uuid', $key);
+		$rotinaSQL -> execute();
+		$numeroDeLinhas = $rotinaSQL -> rowCount();
+		
+		if($numeroDeLinhas > 0){
+			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
+		}else{
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+		}
+
+	}
+
+}
