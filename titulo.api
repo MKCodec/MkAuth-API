@@ -17,7 +17,7 @@ class titulo {
 
 	public function get_listagem() {
 
-		$comandoSQL = 'SELECT uuid_lanc AS uuid, vtab_titulos.titulo, valor, valorpag, datavenc, nossonum, linhadig, nome, login, cpf_cnpj, tipo, email, endereco, numero, bairro, complemento, cidade, estado, cep, status, cli_ativado, bloqueado, uuid_lanc, sis_qrpix.qrcode AS pix
+		$comandoSQL = 'SELECT uuid_lanc AS uuid, vtab_titulos.titulo, valor, valorpag, formapag, datavenc, nossonum, linhadig, nome, login, cpf_cnpj, tipo, email, endereco, numero, bairro, complemento, cidade, estado, cep, status, cli_ativado, bloqueado, uuid_lanc, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE deltitulo = 0
@@ -41,6 +41,7 @@ class titulo {
 		echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 
 	}
+
 
 	public function get_listar($valor) {
 
