@@ -131,7 +131,7 @@ class cliente {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro não encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃ£o encontrado'));
 		}
 		
 	}
