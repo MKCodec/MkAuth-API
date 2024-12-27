@@ -216,7 +216,7 @@ class titulo {
 
 	public function get_pago($valor) {
 
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, valorpag, formapag, vtab_titulos.titulo, status, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, valorpag, formapag, vtab_titulos.titulo, status, zap, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
 		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
 		WHERE (login = :valor OR cpf_cnpj = :valor OR vtab_titulos.titulo = :valor) AND status = 'pago' AND deltitulo = 0
