@@ -13,7 +13,7 @@ class cliente {
 
 	public function get_listagem() {
 
-		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
+		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, zap, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
 		FROM sis_cliente';
 		$rotinaSQL = DB::prepare($comandoSQL);
 		$rotinaSQL -> execute();
@@ -34,7 +34,7 @@ class cliente {
 		$total = intval($resultadosCount->total);
 		$totalPaginas = ceil($total / $parametros['limite']);
 
-		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
+		$comandoSQL = 'SELECT uuid_cliente AS uuid, id, codigo, nome, nome_res, login, cpf_cnpj, tipo, coordenadas, zap, senha, email, ip, mac, ramal, endereco, numero, bairro, complemento, cidade, estado, cep
 		FROM sis_cliente
 		ORDER BY id DESC LIMIT :padrao, :limite';
 
@@ -131,7 +131,7 @@ class cliente {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃ£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 		
 	}
