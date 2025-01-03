@@ -143,7 +143,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -176,7 +176,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -209,7 +209,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -242,7 +242,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -289,7 +289,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -334,11 +334,11 @@ class titulo {
 	
 				echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro fechado com sucesso', 'dados' => $data));
 			} else {
-				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 			}
 
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -373,11 +373,11 @@ class titulo {
 	
 				echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro estornado com sucesso', 'dados' => $data));
 			} else {
-				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 			}
 
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
@@ -394,7 +394,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
 		}
 
 	}
