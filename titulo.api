@@ -117,10 +117,11 @@ class titulo {
 
 	public function get_titulos($valor) {
 	
-		$comandoSQL = "SELECT uuid_lanc AS uuid, login, nome, vtab_titulos.titulo, status, celular, cli_ativado, tipo, valor, linhadig, datavenc, login, cpf_cnpj, sis_qrpix.qrcode AS pix
+		$comandoSQL = "SELECT uuid_lanc AS uuid, vtab_titulos.login, vtab_titulos.nome, vtab_titulos.titulo, status, vtab_titulos.celular, vtab_titulos.cli_ativado, vtab_titulos.tipo, valor, linhadig, datavenc, vtab_titulos.cpf_cnpj, sis_cliente.zap, sis_cliente.bloqueado, sis_cliente.dias_corte, sis_qrpix.qrcode AS pix
 		FROM vtab_titulos
-		LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
-		WHERE (login = :valor OR cpf_cnpj = :valor OR datavenc = :valor) AND deltitulo = 0
+                LEFT JOIN sis_cliente ON vtab_titulos.uuid_cliente = sis_cliente.uuid_cliente
+                LEFT JOIN sis_qrpix ON vtab_titulos.uuid_lanc = sis_qrpix.titulo
+		WHERE (vtab_titulos.login = :valor OR vtab_titulos.cpf_cnpj = :valor OR vtab_titulos.datavenc = :valor) AND deltitulo = 0
 		ORDER BY vtab_titulos.titulo;";
 	
 		$rotinaSQL = DB::prepare($comandoSQL);
@@ -143,7 +144,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro não encontrado'));
 		}
 
 	}
@@ -176,7 +177,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -209,7 +210,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -242,7 +243,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -289,7 +290,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('Total' => $numeroDeLinhas, 'titulos' => $resultadosSQL));
 		} else {
-			echo json_encode(array('mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -334,11 +335,11 @@ class titulo {
 	
 				echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro fechado com sucesso', 'dados' => $data));
 			} else {
-				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
+				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 			}
 
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -373,11 +374,11 @@ class titulo {
 	
 				echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro estornado com sucesso', 'dados' => $data));
 			} else {
-				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
+				echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 			}
 
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
@@ -394,7 +395,7 @@ class titulo {
 		if ($numeroDeLinhas > 0) {
 			echo json_encode(array('status' => 'sucesso', 'mensagem' => 'Registro excluido com sucesso'));
 		} else {
-			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÂ£o encontrado'));
+			echo json_encode(array('status' => 'erro', 'mensagem' => 'Registro nÃƒÆ’Ã‚Â£o encontrado'));
 		}
 
 	}
